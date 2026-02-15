@@ -234,12 +234,89 @@ func transformNotificationsToDomain(notifications []Notification) []*models.Noti
 	return final
 }
 
-func (s *Storage) GetNonReadNotifications(ctx context.Context, serviceName string) ([]*models.Notification, error) {
+func (s *Storage) GetNotReadNotifications(ctx context.Context, serviceName string) ([]*models.Notification, error) {
 	// todo
-	return nil, nil
+	// start span
+
+	log.L(ctx).Debug("getting not read notifications for this service", zap.String("serviceName", serviceName))
+
+	filter := bson.M{ "service" : serviceName, "isRead" : false}
+	options := options.Find().SetSort(bson.D{{Key: "sentAt", Value: -1}})
+
+	cursor, err := s.notificationCollection.Find(ctx, filter, options)
+	if err != nil {
+		log.L(ctx).Error("aggregate notifications by time failed", zap.Error(err))
+
+		return nil, err
+	}
+
+	var results []Notification
+	if err = cursor.All(ctx, &results); err != nil {
+		log.L(ctx).Error("cursor iteration failed", zap.Error(err))
+		
+		return nil, err 
+	}
+
+	domainNotifications := transformNotificationsToDomain(results) 
+
+	return domainNotifications, nil
 }
 
 func (s *Storage) GetLatestNotifications(ctx context.Context, serviceName string, n int) ([]*models.Notification, error) {
 	// todo
-	return nil, nil
+	// start span
+
+	log.L(ctx).Debug("getting latest notifications for this service", zap.String("serviceName", serviceName), zap.Int("n", n))
+
+	filter := bson.M{"service" :serviceName}
+	options := options.Find().
+		SetSort(bson.D{{Key: "sentAt", Value: -1}}).
+		SetLimit(int64(n))
+
+	cursor, err := s.notificationCollection.Find(ctx, filter, options)
+	if err != nil {
+		log.L(ctx).Error("aggregate notifications by time failed", zap.Error(err))
+
+		return nil, err
+	}
+
+	var results []Notification
+	if err = cursor.All(ctx, &results); err != nil {
+		log.L(ctx).Error("cursor iteration failed", zap.Error(err))
+		
+		return nil, err 
+	}
+
+	domainNotifications := transformNotificationsToDomain(results) 
+
+	return domainNotifications, nil
+}
+
+func (s *Storage) GetAllNotifications(ctx context.Context, serviceName string) ([]*models.Notification, error) {
+	// todo
+	// start span
+
+	log.L(ctx).Debug("getting all notifications for this service", zap.String("serviceName", serviceName))
+
+	filter := bson.M{"service" :serviceName}
+	options := options.Find().
+		SetSort(bson.D{{Key: "sentAt", Value: -1}})
+
+	cursor, err := s.notificationCollection.Find(ctx, filter, options)
+	if err != nil {
+		log.L(ctx).Error("aggregate notifications by time failed", zap.Error(err))
+
+		return nil, err
+	}
+
+	var results []Notification
+	if err = cursor.All(ctx, &results); err != nil {
+		log.L(ctx).Error("cursor iteration failed", zap.Error(err))
+		
+		return nil, err 
+	}
+
+	domainNotifications := transformNotificationsToDomain(results) 
+
+	return domainNotifications, nil
 }

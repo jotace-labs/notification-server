@@ -2,6 +2,10 @@
 
 Simple notification server implementation using redis and redpanda.
 
+## Features
+
+Store notifications aynchronously and uses cache to retreive frequently accessed data
+
 ## How it works
 
 - set up a notification topic using the kafka compatible service redpanda 
@@ -72,6 +76,13 @@ finding past notifications
 ```golang
 // "10 minutes ago"
 tenMinsAgo := time.Now().UTC().Add(-10 * time.Minute)
+
+### Indexes created
+
+```text
+sentAt_-1 -> sort by time
+sentAt_text -> filters time
+service_1_isRead_1_sentAt_-1 -> match by service, not read and sent at
 ```
 
 ## Timestamps
