@@ -121,11 +121,17 @@ func initEventsHub(ctx context.Context, service *port.Service) port.EventsHub {
 }
 
 func initAPIController(ctx context.Context, service *port.Service) port.Controller {
-	controller := server.NewController(ctx, service)
+	config := server.Config{
+		ServiceName: config.AppTraceName,
+		Port: config.DefaultAPIPort,
+		Development: config.App.Development,
+		Debug: config.App.Debug,
+	}
+	controller := server.NewController(ctx, service, &config)
 
 	log.L(ctx).Debug("successfully initialized api controller")
 
-	return &controller
+	return controller
 }
 
 // implementing Run interface

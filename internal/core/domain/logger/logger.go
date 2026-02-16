@@ -73,6 +73,10 @@ func L(ctx context.Context) *zap.Logger {
 	return logger
 }
 
+func LogPanic(ctx context.Context, r any) {
+	L(ctx).Error("\n\n\x1b[31m", zap.Any("PANIC", r))
+}
+
 // /*
 // logs:
 // development:
